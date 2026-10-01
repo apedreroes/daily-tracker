@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Hábitos</title>
+  <meta name="description" content="Registro diario de hábitos con resumen semanal y mensual, sincronizado entre dispositivos.">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f766e" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#101615" media="(prefers-color-scheme: dark)">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Hábitos">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+  <header class="app-header">
+    <h1>Hábitos</h1>
+    <p id="sync-status" class="sync-status" data-state="local">Solo en este dispositivo</p>
+  </header>
+
+  <!-- Navegación entre vistas (barra inferior en móvil, superior en pantallas anchas) -->
+  <nav class="tabs" aria-label="Secciones">
+    <a href="#dia" data-view="dia">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+      <span>Día</span>
+    </a>
+    <a href="#semana" data-view="semana">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19V11M12 19V5M19 19v-6"/></svg>
+      <span>Semana</span>
+    </a>
+    <a href="#mes" data-view="mes">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>
+      <span>Mes</span>
+    </a>
+    <a href="#ajustes" data-view="ajustes">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>
+      <span>Ajustes</span>
+    </a>
+  </nav>
+
+  <main id="contenido" tabindex="-1">
+
+    <!-- ============ 1. VISTA DIARIA ============ -->
+    <section id="view-dia" class="view" aria-labelledby="t-dia">
+      <h2 id="t-dia" class="view-title" tabindex="-1">Registro diario</h2>
+
+      <div class="date-nav">
+        <button type="button" id="day-prev" class="icon-btn" aria-label="Día anterior">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <div class="date-center">
+          <p id="day-label" class="date-label"></p>
+          <label for="day-input" class="sr-only">Elegir fecha</label>
+          <input type="date" id="day-input">
+        </div>
+        <button type="button" id="day-next" class="icon-btn" aria-label="Día siguiente">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+      <p class="center"><button type="button" id="day-today" class="link-btn" hidden>Volver a hoy</button></p>
+
+      <div id="yesterday-banner" class="banner" hidden>
+        <p>Ayer no registraste tus hábitos.</p>
+        <button type="button" id="yesterday-go" class="btn small">Registrar ayer</button>
+      </div>
+
+      <form id="day-form" novalidate>
+        <div id="habit-list" class="stack"></div>
+        <div class="save-bar">
+          <p id="day-status" class="save-status"></p>
+          <button type="submit" id="day-save" class="btn primary">Guardar día</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ============ 2. RESUMEN SEMANAL ============ -->
+    <section id="view-semana" class="view" aria-labelledby="t-semana" hidden>
+      <h2 id="t-semana" class="view-title" tabindex="-1">Resumen semanal</h2>
+      <div class="date-nav">
+        <button type="button" id="week-prev" class="icon-btn" aria-label="Semana anterior">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <div class="date-center"><p id="week-label" class="date-label"></p></div>
+        <button type="button" id="week-next" class="icon-btn" aria-label="Semana siguiente">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+      <div id="week-body" class="stack"></div>
+    </section>
+
+    <!-- ============ 3. RESUMEN MENSUAL ============ -->
+    <section id="view-mes" class="view" aria-labelledby="t-mes" hidden>
+      <h2 id="t-mes" class="view-title" tabindex="-1">Resumen mensual</h2>
+      <div class="date-nav">
+        <button type="button" id="month-prev" class="icon-btn" aria-label="Mes anterior">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <div class="date-center"><p id="month-label" class="date-label"></p></div>
+        <button type="button" id="month-next" class="icon-btn" aria-label="Mes siguiente">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+      <div class="field inline">
+        <label for="month-habit">Mostrar</label>
+        <select id="month-habit"></select>
+      </div>
+      <div id="month-body" class="stack"></div>
+    </section>
+
+    <!-- ============ 4. AJUSTES ============ -->
+    <section id="view-ajustes" class="view" aria-labelledby="t-ajustes" hidden>
+      <h2 id="t-ajustes" class="view-title" tabindex="-1">Ajustes</h2>
+
+      <section class="card" aria-labelledby="t-habitos">
+        <h3 id="t-habitos">Mis hábitos</h3>
+        <ul id="settings-habits" class="habit-admin"></ul>
+        <button type="button" id="habit-new" class="btn primary">Añadir hábito</button>
+      </section>
+
+      <section class="card" aria-labelledby="t-sync">
+        <h3 id="t-sync">Sincronización entre dispositivos</h3>
+        <p id="sync-help" class="hint"></p>
+        <div id="sync-panel">
+          <div class="field">
+            <label for="space-code">Código de este espacio</label>
+            <input type="text" id="space-code" readonly autocomplete="off" spellcheck="false">
+          </div>
+          <div class="row">
+            <button type="button" id="space-copy" class="btn small">Copiar código</button>
+            <button type="button" id="space-link" class="btn small">Copiar enlace</button>
+            <button type="button" id="sync-now" class="btn small">Sincronizar ahora</button>
+          </div>
+          <form id="join-form" class="field">
+            <label for="join-code">Conectar con otro dispositivo (pega su código)</label>
+            <div class="row">
+              <input type="text" id="join-code" autocomplete="off" autocapitalize="none" spellcheck="false">
+              <button type="submit" class="btn small">Conectar</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="t-notif">
+        <h3 id="t-notif">Recordatorio matutino</h3>
+        <p class="hint">Recibe un aviso por la mañana si el día anterior quedó sin registrar.</p>
+        <div class="field inline">
+          <label for="notif-hour">Hora del aviso</label>
+          <select id="notif-hour"></select>
+        </div>
+        <p id="notif-status" class="hint" role="status"></p>
+        <div class="row">
+          <button type="button" id="notif-toggle" class="btn small primary">Activar recordatorio</button>
+          <button type="button" id="notif-test" class="btn small">Probar notificación</button>
+        </div>
+      </section>
+
+      <section class="card" id="install-card" aria-labelledby="t-install" hidden>
+        <h3 id="t-install">Instalar la app</h3>
+        <p class="hint">Añádela a la pantalla de inicio para abrirla como una app y usarla sin conexión.</p>
+        <button type="button" id="install-btn" class="btn small primary">Instalar</button>
+      </section>
+    </section>
+  </main>
+
+  <!-- Diálogo: crear / editar hábito -->
+  <dialog id="habit-dialog" aria-labelledby="habit-dialog-title">
+    <form id="habit-form" novalidate>
+      <h2 id="habit-dialog-title">Nuevo hábito</h2>
+      <div class="field">
+        <label for="habit-name">Nombre del hábito</label>
+        <input type="text" id="habit-name" maxlength="60" autocomplete="off" required>
+      </div>
+      <fieldset class="plain">
+        <legend>Opciones disponibles</legend>
+        <ul id="option-rows" class="option-rows"></ul>
+        <button type="button" id="option-add" class="btn small">Añadir opción</button>
+      </fieldset>
+      <label class="check">
+        <input type="checkbox" id="habit-multi">
+        <span>Permitir marcar varias opciones el mismo día</span>
+      </label>
+      <p id="habit-error" class="error" role="alert"></p>
+      <div class="dialog-actions">
+        <button type="button" id="habit-cancel" class="btn">Cancelar</button>
+        <button type="submit" class="btn primary">Guardar hábito</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Diálogo: primera vez con la nube configurada -->
+  <dialog id="welcome-dialog" aria-labelledby="welcome-title">
+    <h2 id="welcome-title">Bienvenido a Hábitos</h2>
+    <p>No hace falta cuenta ni contraseña. Tus datos se guardan en un espacio identificado por un código que puedes compartir entre tus dispositivos.</p>
+    <button type="button" id="welcome-new" class="btn primary block">Empezar de cero</button>
+    <form id="welcome-join" class="field">
+      <label for="welcome-code">¿Ya la usas en otro dispositivo? Pega aquí su código</label>
+      <div class="row">
+        <input type="text" id="welcome-code" autocomplete="off" autocapitalize="none" spellcheck="false">
+        <button type="submit" class="btn">Conectar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- Cliente de Supabase (queda en caché del service worker para el uso offline) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="kv.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
